@@ -1,0 +1,98 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    PAC Tools - Revit add-in.
+
+    Build:   dotnet build src\PacTools\PacTools.csproj -c Release
+    Install: dotnet build src\PacTools\PacTools.csproj -c Release -p:DeployToRevit=true
+             (close Revit first - it keeps the add-in DLL locked while it is running)
+
+    Another Revit version:  -p:RevitVersion=2026
+    Revit installed elsewhere: -p:RevitInstallDir="D:\Autodesk\Revit 2025\"
+
+    Revit 2025 and 2026 run on .NET 8. Revit 2024 and older run on .NET Framework 4.8; to target those,
+    change TargetFramework to net48 as well and guard any .NET-8-only code.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+
+    <RootNamespace>PacTools</RootNamespace>
+    <AssemblyName>PacTools</AssemblyName>
+    <Version>0.1.0</Version>
+    <Product>PAC Tools</Product>
+    <Company>Tandon Consultants Pvt. Ltd.</Company>
+    <Copyright>© 2026 Tandon Consultants Pvt. Ltd.</Copyright>
+    <Description>Revit add-in: the PAC Tools ribbon tab.</Description>
+
+    <!-- Keeps build paths out of the DLL, so two builds of the same source match byte for byte. -->
+    <PathMap>$(MSBuildProjectDirectory)=.</PathMap>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <!-- MSB3277: the Revit DLLs are referenced, not copied, so version chatter is noise. -->
+    <MSBuildWarningsAsMessages>MSB3277</MSBuildWarningsAsMessages>
+
+    <RevitVersion>2025</RevitVersion>
+    <RevitInstallDir Condition="'$(RevitInstallDir)' == ''">C:\Program Files\Autodesk\Revit $(RevitVersion)\</RevitInstallDir>
+    <RevitAddinsDir>$(AppData)\Autodesk\Revit\Addins\$(RevitVersion)\</RevitAddinsDir>
+    <DeployToRevit Condition="'$(DeployToRevit)' == ''">false</DeployToRevit>
+  </PropertyGroup>
+
+  <!--
+    The Revit API DLLs come from the local Revit installation and must NOT be copied next to the add-in
+    (Private=false). Revit loads its own copies; a second copy in the add-in folder causes type mismatches.
+  -->
+  <ItemGroup>
+    <Reference Include="RevitAPI">
+      <HintPath>$(RevitInstallDir)RevitAPI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="RevitAPIUI">
+      <HintPath>$(RevitInstallDir)RevitAPIUI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- The manifest lives at the repository root and travels with the build output. -->
+  <ItemGroup>
+    <None Include="..\..\PacTools.addin" Link="PacTools.addin" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target Name="CheckRevitApi" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="!Exists('$(RevitInstallDir)RevitAPI.dll')"
+           Text="RevitAPI.dll was not found in '$(RevitInstallDir)'. Install Revit $(RevitVersion), or build with -p:RevitInstallDir=&quot;&lt;your Revit folder&gt;\&quot;." />
+  </Target>
+
+  <!--
+    Installs for the current Windows user:
+      %AppData%\Autodesk\Revit\Addins\<version>\PacTools.addin      (the manifest Revit reads)
+      %AppData%\Autodesk\Revit\Addins\<version>\PacTools\*.dll      (the add-in itself)
+  -->
+  <Target Name="DeployToRevitAddins" AfterTargets="Build" Condition="'$(DeployToRevit)' == 'true'">
+    <ItemGroup>
+      <_PacBinaries Include="$(OutDir)$(AssemblyName).dll;$(OutDir)$(AssemblyName).pdb;$(OutDir)$(AssemblyName).xml" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_PacBinaries)" DestinationFolder="$(RevitAddinsDir)$(AssemblyName)\" SkipUnchangedFiles="false" />
+    <Copy SourceFiles="$(OutDir)PacTools.addin" DestinationFolder="$(RevitAddinsDir)" SkipUnchangedFiles="false" />
+    <Message Importance="high" Text="Installed to $(RevitAddinsDir) - restart Revit $(RevitVersion) to load PAC Tools." />
+  </Target>
+
+  <!-- Removes the installed add-in:  dotnet build ... -t:UninstallFromRevit -->
+  <Target Name="UninstallFromRevit">
+    <Delete Files="$(RevitAddinsDir)PacTools.addin" />
+    <ItemGroup>
+      <_PacInstalled Include="$(RevitAddinsDir)$(AssemblyName)\**\*" />
+    </ItemGroup>
+    <Delete Files="@(_PacInstalled)" />
+    <RemoveDir Directories="$(RevitAddinsDir)$(AssemblyName)" />
+    <Message Importance="high" Text="Removed PAC Tools from $(RevitAddinsDir)." />
+  </Target>
+
+</Project>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  PAC Tools - Revit add-in manifest.
+
+  Revit reads this file from:
+      %AppData%\Autodesk\Revit\Addins\2025\PacTools.addin
+  and loads the DLL it points at:
+      %AppData%\Autodesk\Revit\Addins\2025\PacTools\PacTools.dll
+
+  NEVER change AddInId or VendorId once a build has been given to anyone: Revit identifies the add-in by
+  AddInId, so a new one makes Revit treat it as a different add-in (and the old one keeps loading too).
+  FullClassName must stay in step with PacTools.Revit.App.
+-->
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>PAC Tools</Name>
+    <Assembly>PacTools\PacTools.dll</Assembly>
+    <AddInId>34CADD4D-D4A0-4C01-80F4-7E4CEFB792AE</AddInId>
+    <FullClassName>PacTools.Revit.App</FullClassName>
+    <VendorId>PACT</VendorId>
+    <VendorDescription>PAC Tools, Tandon Consultants Pvt. Ltd.</VendorDescription>
+  </AddIn>
+</RevitAddIns>

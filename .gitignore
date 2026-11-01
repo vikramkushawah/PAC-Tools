@@ -1,0 +1,37 @@
+# PAC Tools - files that never go into the repository.
+
+# Build output
+bin/
+obj/
+bin_out/
+.vs/
+*.user
+*.suo
+artifacts/
+
+# NuGet
+packages/
+*.nupkg
+
+# Spreadsheets used while testing: client data, and often large.
+samples/private/
+*.xlsb
+
+# Never commit credentials or keys of any kind.
+*.pfx
+*.snk
+*.pem
+*.key
+*PrivateKey*
+*private_key*
+.env
+
+# Windows / Office clutter
+Thumbs.db
+desktop.ini
+~$*
+*.tmp
+
+# Python bytecode (helper scripts, if any)
+__pycache__/
+*.pyc

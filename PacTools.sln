@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-32D4-A5D9-C5A1A1EB4DE2}") = "PacTools", "src\PacTools\PacTools.csproj", "{C7050138-9195-4577-9935-F587628098A3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C7050138-9195-4577-9935-F587628098A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7050138-9195-4577-9935-F587628098A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7050138-9195-4577-9935-F587628098A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7050138-9195-4577-9935-F587628098A3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {90FE9D72-9E0A-4F28-8A92-97220DAD28EA}
+	EndGlobalSection
+EndGlobal

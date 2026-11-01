@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    PAC Tools - off-screen checks. They run in a second or two, with NO Revit and NO Excel installed:
+    the view models talk to IModelService / IRevitRunner, so a fake stands in for Revit.
+
+    Build and run:
+      dotnet build src\PacTools\PacTools.csproj -c Release
+      dotnet build tests\PacTools.Checks\PacTools.Checks.csproj -c Release -o tests\PacTools.Checks\bin_out
+      tests\PacTools.Checks\bin_out\PacTools.Checks.exe
+
+    It prints one PASS / FAIL line per check and exits non-zero if any failed, so CI can use it.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <RootNamespace>PacTools.Checks</RootNamespace>
+    <AssemblyName>PacTools.Checks</AssemblyName>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <!--
+    The built add-in is referenced as a DLL, not as a project: that keeps these checks runnable on a
+    machine with no Revit installed. Nothing here touches a Revit type, so RevitAPI.dll is never loaded.
+    Build the add-in first.
+  -->
+  <ItemGroup>
+    <Reference Include="PacTools">
+      <HintPath>..\..\src\PacTools\bin\$(Configuration)\PacTools.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="CheckAddinBuilt" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="!Exists('..\..\src\PacTools\bin\$(Configuration)\PacTools.dll')"
+           Text="PacTools.dll was not found. Build the add-in first: dotnet build src\PacTools\PacTools.csproj -c $(Configuration)" />
+  </Target>
+
+</Project>

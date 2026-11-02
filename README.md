@@ -51,7 +51,7 @@ copies it in, and hash-verifies what it installed against what it built. No admi
 nothing is written outside your own user profile. Every failure tells you what to do about it.
 
 Start Revit, and a **PAC Tools** tab appears on the ribbon next to TCPL BIM Tools, with two panels:
-*Model* (Element Count) and *Help* (About). Revit may show a one-time "unknown add-in" prompt — choose
+*Model* (Element Count) and *Help* (Guide, About). Revit may show a one-time "unknown add-in" prompt — choose
 **Always Load**.
 
 To remove it: `install\Uninstall-PACTools.bat`. That removes the add-in, not any project data.
@@ -130,6 +130,7 @@ src/PacTools/
     Icons.cs                ribbon icons, drawn in code
     ElementCountCommand.cs  the worked example - copy this to make a new tool
     AboutCommand.cs         the simplest kind of tool: no window
+    GuideCommand.cs         opens the user guide PDF, installed next to the DLL
     RevitModelService.cs    reads the model
   UI/                       WPF, MVVM, no Revit API
     Mvvm.cs                 ObservableObject, RelayCommand, Choice<T>
@@ -140,6 +141,7 @@ install/
   Uninstall-PACTools.bat    double-click to remove it
   install.ps1               the real work: checks, build, copy, hash-verify
 docs/ARCHITECTURE.md        the Excel-to-schedule design. Read this first
+docs/guide/                 the user guide: PAC-Tools-Guide.pdf, and build_guide.py that makes it
 CONTRIBUTING.md             how to work in this repository
 CLAUDE.md                   project memory, for picking the work up cold
 ```
@@ -152,6 +154,12 @@ category, and copies or saves the table as CSV. It only ever reads the model.
 It exists to prove the whole pipeline works — ribbon → command → modeless window → `RevitQueue` →
 service → `Core` logic → bound UI — and as the file to copy when adding a real tool. Once the Excel tools
 are in, it can be deleted; nothing else depends on it.
+
+## The user guide
+
+**PAC Tools › Help › Guide** opens [docs/guide/PAC-Tools-Guide.pdf](docs/guide/PAC-Tools-Guide.pdf), which is
+installed next to the DLL. When a tool changes, edit the text in `docs/guide/build_guide.py`, run it
+(`pip install reportlab` once), and commit both files. Building the add-in does not need Python.
 
 ## The two rules that matter most
 

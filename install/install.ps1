@@ -226,7 +226,7 @@ Step "Installing into Revit $RevitVersion"
 New-Item -ItemType Directory -Force -Path $targetDir | Out-Null
 
 $copied = 0
-foreach ($name in 'PacTools.dll', 'PacTools.pdb', 'PacTools.xml') {
+foreach ($name in 'PacTools.dll', 'PacTools.pdb', 'PacTools.xml', 'PAC-Tools-Guide.pdf') {
     $src = Join-Path $buildDir $name
     if (-not (Test-Path $src)) {
         if ($name -eq 'PacTools.dll') { Fail "$name is missing from the build output." 'Rebuild without -SkipBuild.' }
@@ -280,7 +280,7 @@ Write-Host ''
 Write-Host '  Next:' -ForegroundColor White
 Write-Host '    1. Start Revit and open any project.' -ForegroundColor Gray
 Write-Host '    2. Look for a new PAC TOOLS tab on the ribbon, beside TCPL BIM Tools.' -ForegroundColor Gray
-Write-Host '    3. It has two panels: Model (Element Count) and Help (About).' -ForegroundColor Gray
+Write-Host '    3. It has two panels: Model (Element Count) and Help (Guide, About).' -ForegroundColor Gray
 Write-Host ''
 Write-Host '  If the tab does not appear, Revit will have logged why here:' -ForegroundColor Gray
 Write-Host "    $env:LOCALAPPDATA\PACTools\logs\pactools.log" -ForegroundColor DarkGray

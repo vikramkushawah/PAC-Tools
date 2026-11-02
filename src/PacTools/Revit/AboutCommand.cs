@@ -22,7 +22,8 @@ namespace PacTools.Revit
                     MainContent =
                         "Revit add-in for Tandon Consultants Pvt. Ltd. (TCPL).\n\n" +
                         "Tools on this tab:\n" +
-                        "    •  Element Count – elements per category, for the active view or the whole model.\n\n" +
+                        "    •  Element Count – elements per category, for the active view or the whole model.\n" +
+                        "    •  Guide – the user guide, as a PDF.\n\n" +
                         "Log file:\n" +
                         "    %LocalAppData%\\" + Brand.DataFolder + "\\logs\\pactools.log",
                     CommonButtons = TaskDialogCommonButtons.Close,

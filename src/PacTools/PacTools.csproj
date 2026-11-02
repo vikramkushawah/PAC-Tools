@@ -65,6 +65,11 @@
     <None Include="..\..\PacTools.addin" Link="PacTools.addin" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <!-- The user guide travels with the add-in, so the Guide button works offline. -->
+  <ItemGroup>
+    <None Include="..\..\docs\guide\PAC-Tools-Guide.pdf" Link="PAC-Tools-Guide.pdf" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <Target Name="CheckRevitApi" BeforeTargets="ResolveAssemblyReferences">
     <Error Condition="!Exists('$(RevitInstallDir)RevitAPI.dll')"
            Text="RevitAPI.dll was not found in '$(RevitInstallDir)'. Install Revit $(RevitVersion), or build with -p:RevitInstallDir=&quot;&lt;your Revit folder&gt;\&quot;." />
@@ -77,7 +82,7 @@
   -->
   <Target Name="DeployToRevitAddins" AfterTargets="Build" Condition="'$(DeployToRevit)' == 'true'">
     <ItemGroup>
-      <_PacBinaries Include="$(OutDir)$(AssemblyName).dll;$(OutDir)$(AssemblyName).pdb;$(OutDir)$(AssemblyName).xml" />
+      <_PacBinaries Include="$(OutDir)$(AssemblyName).dll;$(OutDir)$(AssemblyName).pdb;$(OutDir)$(AssemblyName).xml;$(OutDir)PAC-Tools-Guide.pdf" />
     </ItemGroup>
     <Copy SourceFiles="@(_PacBinaries)" DestinationFolder="$(RevitAddinsDir)$(AssemblyName)\" SkipUnchangedFiles="false" />
     <Copy SourceFiles="$(OutDir)PacTools.addin" DestinationFolder="$(RevitAddinsDir)" SkipUnchangedFiles="false" />

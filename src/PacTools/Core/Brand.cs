@@ -17,6 +17,9 @@ namespace PacTools.Core
         /// <summary>Folder under %LocalAppData% and %AppData% used for logs and settings.</summary>
         public const string DataFolder = "PACTools";
 
+        /// <summary>The user guide, installed next to PacTools.dll. Built by docs/guide/build_guide.py.</summary>
+        public const string GuideFileName = "PAC-Tools-Guide.pdf";
+
         /// <summary>Accent colour (PAC blue) as #RRGGBB. Keep in step with the brush in the XAML windows.</summary>
         public const string AccentHex = "#0F5E8C";
 

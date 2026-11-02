@@ -19,8 +19,8 @@ holds the one Revit API fact the whole design turns on.
 | | |
 |---|---|
 | Version | 0.1.0 |
-| Built / run in Revit | **No.** Written in a Linux container with no .NET SDK and no Revit — **never compiled.** The first job on a Windows machine is running `install\Install-PACTools.bat` and fixing whatever the build reports. |
-| Installer | `install\` (02-11-2026): `Install-PACTools.bat` / `Uninstall-PACTools.bat` / `install.ps1`. Per-user, no admin rights, hash-verifies installed == built. Written but **never run** — the container is Linux. |
+| Built / run in Revit | **Yes, on 02-11-2026:** builds with 0 warnings against Revit 2025.4, and Revit loaded the DLL on restart. The checks pass. The tools themselves have not been exercised in Revit yet. |
+| Installer | `install\` (02-11-2026): `Install-PACTools.bat` / `Uninstall-PACTools.bat` / `install.ps1`. Per-user, no admin rights, hash-verifies installed == built. `install.ps1` itself is **still not run**: the first install used `-p:DeployToRevit=true` because Revit was open. |
 | Excel work | **Core layer written (02-11-2026), not compiled.** `Excel/` and `Revit/` implementations not started. |
 | Scaffold | Ribbon, modeless windows, RevitQueue, MVVM, build + install + uninstall targets, off-screen checks, one sample tool. |
 
@@ -120,6 +120,12 @@ M4 manage-links, worksharing, ILRepack, guide. Detail in `docs/ARCHITECTURE.md �
 - `IsBusy` calls `CommandManager.InvalidateRequerySuggested()`; without it the buttons stay disabled after a
   refresh, because nothing else tells WPF to re-ask `CanExecute`.
 - EPPlus is banned (Polyform Noncommercial from v5). Excel COM Interop is banned outright.
+
+## The user guide
+
+`docs/guide/PAC-Tools-Guide.pdf`, made by `docs/guide/build_guide.py` (reportlab) and committed, so a build
+needs no Python. Copied next to the DLL at build and install; opened by **Help › Guide** (`GuideCommand`),
+which also works with no project open. When a tool changes, update the text there and rebuild the PDF.
 
 ## Installing
 

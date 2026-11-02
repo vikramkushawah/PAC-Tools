@@ -78,6 +78,18 @@ namespace PacTools.Revit
             string assembly = Assembly.GetExecutingAssembly().Location;
 
             panel.AddItem(new PushButtonData(
+                Brand.ButtonPrefix + "Guide",
+                "Guide",
+                assembly,
+                typeof(GuideCommand).FullName)
+            {
+                ToolTip = "Opens the " + Brand.ProductName + " user guide (PDF).",
+                AvailabilityClassName = typeof(GuideCommand).FullName,
+                LargeImage = Icons.Book(32),
+                Image = Icons.Book(16)
+            });
+
+            panel.AddItem(new PushButtonData(
                 Brand.ButtonPrefix + "About",
                 "About",
                 assembly,

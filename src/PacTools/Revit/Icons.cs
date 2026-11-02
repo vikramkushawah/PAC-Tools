@@ -48,6 +48,24 @@ namespace PacTools.Revit
             dc.DrawRectangle(white, null, new Rect(s * 0.5 - w / 2.0, s * 0.42, w, s * 0.33));
         });
 
+        /// <summary>An open book - the Guide icon.</summary>
+        public static BitmapSource Book(int size) => Render(size, (dc, s) =>
+        {
+            var fill = new SolidColorBrush(Accent);
+            var line = new Pen(Brushes.White, Math.Max(1.0, s / 16.0));
+
+            // Two pages, either side of a gap.
+            dc.DrawRectangle(fill, null, new Rect(s * 0.06, s * 0.18, s * 0.41, s * 0.66));
+            dc.DrawRectangle(fill, null, new Rect(s * 0.53, s * 0.18, s * 0.41, s * 0.66));
+
+            // Lines of text.
+            foreach (double y in new[] { 0.34, 0.50, 0.66 })
+            {
+                dc.DrawLine(line, new Point(s * 0.14, s * y), new Point(s * 0.39, s * y));
+                dc.DrawLine(line, new Point(s * 0.61, s * y), new Point(s * 0.86, s * y));
+            }
+        });
+
         private static BitmapSource Render(int size, Action<DrawingContext, double> draw)
         {
             var visual = new DrawingVisual();

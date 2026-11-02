@@ -1,0 +1,2 @@
+# Git must never change line endings inside a PDF: that breaks the file's internal offsets.
+*.pdf binary

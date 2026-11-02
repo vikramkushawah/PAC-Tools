@@ -20,7 +20,7 @@ holds the one Revit API fact the whole design turns on.
 |---|---|
 | Version | 0.1.0 |
 | Built / run in Revit | **No.** Written in a Linux container with no .NET SDK and no Revit — **never compiled.** The first job on a Windows machine is `dotnet build` and fixing whatever it says. |
-| Excel work | **Not started.** Designed only. |
+| Excel work | **Core layer written (02-11-2026), not compiled.** `Excel/` and `Revit/` implementations not started. |
 | Scaffold | Ribbon, modeless windows, RevitQueue, MVVM, build + install + uninstall targets, off-screen checks, one sample tool. |
 
 **AddInId `34CADD4D-D4A0-4C01-80F4-7E4CEFB792AE`, VendorId `PACT`.** Never change either: Revit identifies
@@ -52,20 +52,53 @@ element. The carriers are the previous state, so a refresh diffs against them an
 - `ParameterBindings` are **per category and project-wide**: binding a parameter to Generic Models puts it
   on every Generic Model in the project. Hence the fixed parameter pool rather than one per column.
 - `ViewSchedule.CreateKeySchedule(doc, categoryId)` makes abstract "key" elements, each row an element whose
-  parameters are the columns. Revit's help says key schedules take **instance parameters only**, and rows are
-  added in the UI with *Insert Data Row*. **No API row-insertion method is documented — this is the M0 spike.**
+  parameters are the columns. Revit's help says key schedules take **instance parameters only**.
+- **02-11-2026, from Revit's *Modify a Schedule* help page:** *Insert Data Row* works for room, area,
+  **key**, space and sheet-list schedules, and *"to edit a cell, click in it… or enter text"*. So body cells
+  **are** editable for those types — the API prohibition is on *standard* schedule bodies only, and a key
+  schedule is not one. Filters support **key schedule parameters**, up to 8 filters (one is needed).
+- **Why key schedules still are not the primary choice:** key rows appear as selectable key values in the
+  instance properties of **every element of that category** — 500 imported rows means a 500-entry dropdown
+  on every Room. Worse than invisible carriers, and worse the bigger the table. The narrowed M0 question is
+  only whether key rows can be inserted *through the API* rather than only in the UI.
 - Revit **2025 and 2026 are both .NET 8**, so one `net8.0-windows` build serves both. A later move to
   .NET 10 is forum talk, not published documentation — do not act on it yet.
 - Revit has **no native Excel import**. Nothing is being reinvented here.
 - Extensible Storage cannot be read by schedules — fine for the link record, useless for presentation.
 
-## Open decisions (asked of Vineet 01-11-2026, not yet answered)
+## The Core layer (written 02-11-2026)
 
-1. Carrier category — Generic Models, or something less used?
-2. Column caps — 24 text / 8 number / 4 integer / 2 yes-no enough?
-3. Row warning threshold — 5,000 proposed.
-4. Row key — a required key column, or row order?
-5. Shared parameter file — PAC Tools owns its own `.txt`, or append to TCPL's existing one?
+`Core/` is complete for M1 and M2 and has **no Revit API and no Excel library** — 145 off-screen checks
+cover it. The files, and the one idea each exists for:
+
+| File | What it settles |
+|---|---|
+| `Spreadsheet.cs` | `WorksheetTable` — a rectangle of **text**. Typing happens later, per column, so "this value will not fit that type" is reportable instead of silently coerced. `ISpreadsheetReader` is the seam `Excel/` implements. |
+| `ColumnTypes.cs` | `ValueParser`: thousands separators, European decimals, accounting negatives `(250)`, percentages, currency symbols, unit suffixes (`25 mm`), yes/no words. `TypeGuess` picks the narrowest type that fits **every** value. |
+| `ImportSettings.cs` | The five decisions as defaults, and **`ParameterPool`** — the heart of the design. |
+| `ColumnMapping.cs` | `ColumnMap` (slot allocation, key suggestion) and `HeadingReconciler`, which matches by name first so moved columns are not reported as changes, then treats a heading in a known position as a rename. |
+| `ImportValidation.cs` | Every case from ARCHITECTURE §9, each with a stable `Code` so the UI and the checks never match on prose. |
+| `RowDiff.cs` | `SourceRows` + `RowDiffer`. Blank rows skipped. Matched by key, or `#n` by position. |
+| `LinkRecord.cs` | The Extensible Storage record, as JSON. Deliberately holds **no row data**. Corrupt JSON returns null rather than throwing, so one bad record cannot stop a project's other links loading. |
+| `DataStore.cs` | The whole Core/Revit boundary: `ICarrierStore`, `IScheduleBuilder`, `ILinkStore`, `CarrierRow`, `ApplyResult`. |
+
+**Two non-obvious things in there, both deliberate:**
+- **`PAC_RowHash`.** A refresh compares row hashes, not displayed values, because a number written into
+  Revit does not read back as the text that was imported — `"0.10"` becomes `"0.1"` — so comparing values
+  reports changes that never happened. The hash is computed from the spreadsheet text both times.
+- **`TypeGuess` will not guess Yes/No for a column of 1s and 0s**, even though `1`/`0` parse as a flag.
+  A column of 1s and 0s is far more likely to be counts, and guessing wrong loses the numbers. It only
+  guesses Yes/No when at least one cell is written as a word.
+
+## Decisions — defaults taken 02-11-2026 (Vineet to confirm)
+
+Taken so work was not blocked; all five live in `Core/ImportSettings.cs`, each one a one-line change.
+
+1. Carrier category — **Generic Models**.
+2. Column caps — **24 text / 8 number / 4 integer / 4 length / 2 area / 2 yes-no** (48 parameters, fixed).
+3. Rows — **warn at 5,000, refuse at 50,000**.
+4. Row key — **optional**, row order when none, with a warning that says why that is fragile.
+5. Shared parameter file — **PAC Tools owns its own**, so an outsourced build cannot corrupt TCPL's.
 
 ## Milestones
 

@@ -150,6 +150,7 @@ One `DataStorage` element per import, carrying a versioned schema:
 | `ColumnMap` (JSON) | spreadsheet heading → pool parameter GUID, data type, unit, display name, order |
 | `KeyColumn` | which column identifies a row across refreshes (optional) |
 | `ContentHash` | SHA-256 of the extracted range: answers "has it changed?" without a full re-read |
+| *(per row, on the carrier)* `PAC_RowHash` | a hash of that row's source cells. A refresh compares hashes, never displayed values — a number written to Revit does not read back as the text that was imported ("0.10" becomes "0.1"), so comparing values reports changes that never happened |
 | `SourceLastWriteUtc` | cheap first check before hashing |
 | `LastRefreshUtc`, `LastRefreshBy` | audit, and useful in a workshared model |
 | `ScheduleViewId` | the schedule this link feeds |
@@ -289,16 +290,56 @@ Each milestone ends with off-screen checks passing (`tests/PacTools.Checks`) and
 
 ---
 
-## 11. Decisions needed before M1
+## 10a. Findings so far (02-11-2026, from Autodesk product documentation)
 
-1. **Carrier category** — Generic Models (familiar, but mixes with real generic models), or a less-used
-   category? Affects every project the tool touches.
-2. **Column caps** — are 24 text / 8 number / 4 integer / 2 yes-no enough for TCPL's real spreadsheets?
-3. **Row warning threshold** — 5,000 proposed.
-4. **Row key** — is a user-chosen key column required, or is row order an acceptable default? Row order
-   means inserting a row in Excel re-labels everything below it on refresh.
-5. **Shared parameter file** — PAC Tools can create and own its own `.txt`, or append to TCPL's existing
-   shared parameter file. Owning its own is cleaner; appending keeps one file for the office.
+Checked against Autodesk's own help, not from memory. Two things moved:
+
+**Key schedules are more viable than the API reference alone suggested.** Revit's *Modify a Schedule* page
+says: *"add a data row to a room schedule, area schedule, **key schedule**, space schedule, or sheet
+list… Enter values as desired. This function is useful for defining elements before placing them in the
+model."* And: *"To edit a cell, click in it… or enter text."* So body cells **are** editable for those
+schedule types — the API's prohibition is specifically on *"standard schedule body sections"*, and a key
+schedule is not one. *Create a Key Schedule* also confirms shared parameters work there, with the
+restriction already noted: **"Only Instance parameters can be included in a key schedule."**
+
+**But a new cost appears, and it is the reason the recommendation does not change.** Key rows become
+selectable key values in the instance properties of **every element of that category**. Import 500 rows
+against Rooms and every Room in the project gets a 500-entry style dropdown. For a data table that is
+worse than invisible carrier elements, and it gets worse the bigger the table. So:
+
+> **Key schedules stay the alternative, not the primary — suited to small tables (tens of rows), where
+> the dropdown is harmless. `ICarrierStore` keeps both possible.** The remaining unknown is narrower than
+> before: whether rows can be inserted *through the API* rather than only in the UI. Still M0.
+
+**Filtering is confirmed adequate.** *Filter Data in a Schedule*: filters support text, number, integer,
+length, area, volume, yes/no **and key schedule parameters**, up to **8 filters**. The design needs one
+(`PAC_DataSetId`), so there is ample room.
+
+**Also confirmed:** Revit has no native Excel import — *Export a Schedule* goes one way only, to delimited
+text. Nothing here is reinventing an existing feature.
+
+## 11. Decisions — defaults taken 02-11-2026, still open to change
+
+All five are now implemented as **defaults in `Core/ImportSettings.cs`**, so work could continue without
+blocking. Each is a one-line change, and each is commented in that file with the reasoning. Vineet should
+confirm or correct them before M1 ships:
+
+| # | Decision | Default taken | Why, and what it costs |
+|---|---|---|---|
+| 1 | Carrier category | **Generic Models** | Every project has it and it schedules cleanly. Cost: carriers appear in Generic Models counts elsewhere, which one filter removes. |
+| 2 | Column caps | **24 text, 8 number, 4 integer, 4 length, 2 area, 2 yes/no** | 44 pool parameters + 4 bookkeeping = **48, fixed, forever**. Cost: a wider sheet is refused with a clear message. |
+| 3 | Row warning / refusal | **warn at 5,000, refuse at 50,000** | Past ~20,000 the model suffers; the hard limit stops someone importing a database by accident. |
+| 4 | Row key | **optional; row order when none** | Not blocking an import on it. The wizard recommends a key column and says plainly that row order re-labels everything below an inserted row. |
+| 5 | Shared parameter file | **PAC Tools owns `PAC_Tools_Shared_Parameters.txt`** | An outsourced build can then never corrupt TCPL's office file. Cost: a second file to keep with the project. |
+
+### The original list, for reference
+
+1. Carrier category — Generic Models, or something less used?
+2. Column caps — are the numbers above enough for TCPL's real spreadsheets?
+3. Row warning threshold.
+4. Row key — required, or is row order acceptable?
+5. Shared parameter file — own file, or append to TCPL's?
+
 
 ## 12. Deliberately out of scope
 

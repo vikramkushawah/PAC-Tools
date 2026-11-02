@@ -38,9 +38,38 @@ Extensible Storage for the link record. The reasoning, the alternatives and the 
 
 ---
 
-## Build and install
+## Install (the easy way)
 
-Close Revit first — it keeps the add-in DLL locked while it is running.
+**Close Revit first** — it keeps the add-in DLL locked while it is running. Then double-click:
+
+```
+install\Install-PACTools.bat
+```
+
+It checks that Revit is closed and that the .NET SDK and the Revit API are present, builds the add-in,
+copies it in, and hash-verifies what it installed against what it built. No administrator rights needed —
+nothing is written outside your own user profile. Every failure tells you what to do about it.
+
+Start Revit, and a **PAC Tools** tab appears on the ribbon next to TCPL BIM Tools, with two panels:
+*Model* (Element Count) and *Help* (About). Revit may show a one-time "unknown add-in" prompt — choose
+**Always Load**.
+
+To remove it: `install\Uninstall-PACTools.bat`. That removes the add-in, not any project data.
+
+Options, run from a terminal rather than double-clicked:
+
+```bash
+powershell -NoProfile -ExecutionPolicy Bypass -File install\install.ps1 -RevitVersion 2026
+```
+
+```bash
+powershell -NoProfile -ExecutionPolicy Bypass -File install\install.ps1 -RevitInstallDir "D:\Autodesk\Revit 2025"
+```
+
+`-Pull` updates the repository first, `-SkipBuild` installs what is already built, `-Configuration Debug`
+installs a debug build, `-Uninstall` removes it.
+
+## Build and install by hand
 
 ```bash
 dotnet build src/PacTools/PacTools.csproj -c Release
@@ -106,6 +135,10 @@ src/PacTools/
     Mvvm.cs                 ObservableObject, RelayCommand, Choice<T>
     ElementCountWindow.xaml + .cs, ElementCountViewModel.cs
 tests/PacTools.Checks/      off-screen checks: run the logic and the view models with a fake Revit
+install/
+  Install-PACTools.bat      double-click to build and install for the current user
+  Uninstall-PACTools.bat    double-click to remove it
+  install.ps1               the real work: checks, build, copy, hash-verify
 docs/ARCHITECTURE.md        the Excel-to-schedule design. Read this first
 CONTRIBUTING.md             how to work in this repository
 CLAUDE.md                   project memory, for picking the work up cold

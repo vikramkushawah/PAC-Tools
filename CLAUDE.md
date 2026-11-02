@@ -19,7 +19,8 @@ holds the one Revit API fact the whole design turns on.
 | | |
 |---|---|
 | Version | 0.1.0 |
-| Built / run in Revit | **No.** Written in a Linux container with no .NET SDK and no Revit — **never compiled.** The first job on a Windows machine is `dotnet build` and fixing whatever it says. |
+| Built / run in Revit | **No.** Written in a Linux container with no .NET SDK and no Revit — **never compiled.** The first job on a Windows machine is running `install\Install-PACTools.bat` and fixing whatever the build reports. |
+| Installer | `install\` (02-11-2026): `Install-PACTools.bat` / `Uninstall-PACTools.bat` / `install.ps1`. Per-user, no admin rights, hash-verifies installed == built. Written but **never run** — the container is Linux. |
 | Excel work | **Core layer written (02-11-2026), not compiled.** `Excel/` and `Revit/` implementations not started. |
 | Scaffold | Ribbon, modeless windows, RevitQueue, MVVM, build + install + uninstall targets, off-screen checks, one sample tool. |
 
@@ -119,6 +120,18 @@ M4 manage-links, worksharing, ILRepack, guide. Detail in `docs/ARCHITECTURE.md �
 - `IsBusy` calls `CommandManager.InvalidateRequerySuggested()`; without it the buttons stay disabled after a
   refresh, because nothing else tells WPF to re-ask `CanExecute`.
 - EPPlus is banned (Polyform Noncommercial from v5). Excel COM Interop is banned outright.
+
+## Installing
+
+`install\Install-PACTools.bat` (double-click). Checks Revit is closed, finds Revit and the .NET SDK,
+builds, copies to `%AppData%\Autodesk\Revit\Addins\2025\`, then hash-verifies installed == built and
+checks the manifest's `Assembly` path actually resolves (if it does not, Revit loads nothing and says
+nothing — that check exists because the failure is silent).
+
+The user asked for PAC Tools as "a new tool palette" on 02-11-2026 and confirmed they meant **its own
+ribbon tab**, not a dockable pane. The tab already existed in the scaffold, so nothing was added for it.
+A dockable pane (`IDockablePaneProvider`) was offered and declined for now — it is still the natural home
+for "Manage links" in M4 if they change their mind.
 
 ## Repository
 

@@ -20,6 +20,7 @@ namespace PacTools.Checks
 
             CountReportChecks();
             ViewModelChecks().GetAwaiter().GetResult();
+            ImportChecks.Run();
 
             Console.WriteLine(new string('-', 58));
             Console.WriteLine($"{_passed} passed, {_failed} failed");
@@ -130,7 +131,7 @@ namespace PacTools.Checks
 
         // --------------------------------------------------------------- Harness
 
-        private static void Check(string what, bool ok)
+        internal static void Check(string what, bool ok)
         {
             if (ok) { _passed++; Console.WriteLine("  PASS  " + what); }
             else { _failed++; Console.WriteLine("  FAIL  " + what); }
